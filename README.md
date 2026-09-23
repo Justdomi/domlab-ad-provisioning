@@ -1,4 +1,4 @@
-# domlab-ad-provisioning
+﻿# domlab-ad-provisioning
 
 ![Windows Server 2022](https://img.shields.io/badge/Windows_Server-2022_Core-0078D6?logo=windows&logoColor=white)
 ![Active Directory](https://img.shields.io/badge/Active_Directory-domlab.local-blue)
@@ -7,16 +7,16 @@
 ![Status](https://img.shields.io/badge/build-complete-success)
 ![Screenshots](https://img.shields.io/badge/screenshots-33-informational)
 
-Documentation of Active Directory provisioning work on the **DOMLAB.LOCAL** home lab domain — culminating in the build of **IIS01**, a dedicated member server, from bare VM to fully domain-joined with IIS and a file share role. Written as a real-world troubleshooting log, not a polished happy-path tutorial, because the debugging is the actual skill demonstration.
+Documentation of Active Directory provisioning work on the **DOMLAB.LOCAL** home lab domain â€” culminating in the build of **IIS01**, a dedicated member server, from bare VM to fully domain-joined with IIS and a file share role. Written as a real-world troubleshooting log, not a polished happy-path tutorial, because the debugging is the actual skill demonstration.
 
 ## Environment
 
 | | Details |
 |---|---|
 | **Domain** | domlab.local (NetBIOS: DOMLAB) |
-| **Domain Controller** | DC01 (VM 109, pve1, 10.10.10.10) — PDC Emulator, RID Master, Infrastructure Master |
+| **Domain Controller** | DC01 (VM 109, pve1, 10.10.10.10) â€” PDC Emulator, RID Master, Infrastructure Master |
 | **Hypervisor** | Proxmox VE, multi-node cluster (`homelab-cluster`) |
-| **Target VM** | IIS01 (VM 200), built on **pve2** — the domain identity subnet (10.10.10.0/24) normally lives only on pve1's internal `vmbr3` bridge, so this build proves connectivity from a second node via VLAN 10 tagging on `vmbr0` |
+| **Target VM** | IIS01 (VM 200), built on **pve2** â€” the domain identity subnet (10.10.10.0/24) normally lives only on pve1's internal `vmbr3` bridge, so this build proves connectivity from a second node via VLAN 10 tagging on `vmbr0` |
 | **OS** | Windows Server 2022, Server Core |
 
 ## Architecture
@@ -56,8 +56,8 @@ flowchart TD
     D -- No --> D1[Point DNS at DC01<br/>10.10.10.10] --> D
     D -- Yes --> E[Add-Computer domlab.local]
     E --> F{Object in<br/>correct OU?}
-    F -- No --> F1[Move-ADObject from DC01<br/>→ OU=DOMLAB-Computers<br/>verify with Get-ADComputer] --> F
-    F -- Yes --> G[Rename-Computer → IIS01]
+    F -- No --> F1[Move-ADObject from DC01<br/>â†’ OU=DOMLAB-Computers<br/>verify with Get-ADComputer] --> F
+    F -- Yes --> G[Rename-Computer â†’ IIS01]
     G --> H[Install IIS role]
     H --> I[Create DomLabShare SMB share]
     I --> J[Verify single DNS A record]
@@ -79,18 +79,18 @@ flowchart TD
 
 ```
 domlab-ad-provisioning/
-├── README.md                              ← this file
-├── scripts/
-│   ├── 01-network-setup.ps1               ← VirtIO driver, static IP, DNS
-│   ├── 02-domain-join.ps1                 ← join + rename + OU placement (as it should be run cleanly)
-│   ├── 03-fix-ou-placement.ps1            ← recovery script for the "joined into wrong container" scenario
-│   ├── 04-iis-and-fileshare.ps1           ← IIS role + NTFS share
-│   └── 05-dns-verification.ps1            ← A record check/create, run from DC01
-├── docs/
-│   └── troubleshooting-log.md             ← full blow-by-blow of every real issue hit during this build
-└── screenshots/
-    ├── MANIFEST.md                        ← maps every screenshot to its filename and what it shows
-    └── *.png                              ← 33 screenshots from the actual build session
+â”œâ”€â”€ README.md                              â† this file
+â”œâ”€â”€ scripts/
+â”‚   â”œâ”€â”€ 01-network-setup.ps1               â† VirtIO driver, static IP, DNS
+â”‚   â”œâ”€â”€ 02-domain-join.ps1                 â† join + rename + OU placement (as it should be run cleanly)
+â”‚   â”œâ”€â”€ 03-fix-ou-placement.ps1            â† recovery script for the "joined into wrong container" scenario
+â”‚   â”œâ”€â”€ 04-iis-and-fileshare.ps1           â† IIS role + NTFS share
+â”‚   â””â”€â”€ 05-dns-verification.ps1            â† A record check/create, run from DC01
+â”œâ”€â”€ docs/
+â”‚   â””â”€â”€ troubleshooting-log.md             â† full blow-by-blow of every real issue hit during this build
+â””â”€â”€ screenshots/
+    â”œâ”€â”€ MANIFEST.md                        â† maps every screenshot to its filename and what it shows
+    â””â”€â”€ *.png                              â† 33 screenshots from the actual build session
 ```
 
 ## Build Summary
@@ -109,7 +109,7 @@ domlab-ad-provisioning/
 
 ## Architecture Note: Cross-Node Network Path
 
-Every other domain-joined machine in this lab (DC01, both WSFC nodes, ISCSI01) lives on **pve1** specifically, because `vmbr3` — the bridge carrying the 10.10.10.0/24 identity subnet — is an internal-only bridge that exists solely on that node. Proxmox bridges are per-node; a VM's config can *reference* a bridge name that doesn't exist on the node it's actually running on, and Proxmox won't warn you.
+Every other domain-joined machine in this lab (DC01, both WSFC nodes, ISCSI01) lives on **pve1** specifically, because `vmbr3` â€” the bridge carrying the 10.10.10.0/24 identity subnet â€” is an internal-only bridge that exists solely on that node. Proxmox bridges are per-node; a VM's config can *reference* a bridge name that doesn't exist on the node it's actually running on, and Proxmox won't warn you.
 
 IIS01 was deliberately built on **pve2** instead, using a VirtIO NIC tagged to **VLAN 10** on `vmbr0` (the physical uplink bridge) rather than `vmbr3`. This was an open question until tested directly:
 
@@ -122,15 +122,15 @@ Confirmed: VLAN 10 on pve2 has a real Layer 2/3 path to the domain subnet throug
 
 ## Key Takeaways
 
-- **Proxmox bridges are per-node.** A VM's network config can reference a bridge that simply doesn't exist on whatever node it lands on, and nothing warns you — Windows just shows zero adapters, or a service silently can't route.
+- **Proxmox bridges are per-node.** A VM's network config can reference a bridge that simply doesn't exist on whatever node it lands on, and nothing warns you â€” Windows just shows zero adapters, or a service silently can't route.
 - **PowerShell module/cmdlet availability is tied to installed roles**, not "being on a Windows Server." `ActiveDirectory`, `DnsServer`, and `GroupPolicy` modules all require their respective features/roles/RSAT tools before their cmdlets exist in a session.
-- **No error ≠ success.** Multiple steps in this build produced no error text at all while doing nothing or doing the wrong thing. Verifying state after every mutating command — not just checking for red text — caught all of them.
+- **No error â‰  success.** Multiple steps in this build produced no error text at all while doing nothing or doing the wrong thing. Verifying state after every mutating command â€” not just checking for red text â€” caught all of them.
 - **A credential-shaped error isn't always a credential problem.** Isolating authentication (`net use`) from authorization (the actual operation) turned what looked like a password issue into the real root cause: object placement and AD delegation.
 
 Full details on every issue hit and how it was root-caused: see [`docs/troubleshooting-log.md`](docs/troubleshooting-log.md).
 
 ## Related Work
 
-- iSCSI shared storage for the WSFC cluster (ISCSI01) — same domain-join pattern, built first
-- 6-phase Cisco Catalyst 3850 RSTP/OSPF switch fabric — see `cisco-rstp-ospf-switch-fabric`
-- Full DOMLAB Proxmox cluster build — see `proxmox-homelab-cluster`
+- [`failover-cluster-witness`](https://github.com/Justdomi/failover-cluster-witness) — the two-node WSFC cluster this domain also supports
+- iSCSI shared storage for the WSFC cluster (ISCSI01) — same domain-join pattern, built first (write-up coming)
+- 6-phase Cisco Catalyst 3850 RSTP/OSPF switch fabric that carries VLAN 10 between nodes (write-up coming)
